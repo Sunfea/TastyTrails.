@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ restaurant.name }} - TastyTrails{% endblock %}
+
+{% block hero %}
+<div class="restaurant-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <h1>{{ restaurant.name }}</h1>
+                <p class="lead">{{ restaurant.description|truncatewords:30 }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Please Login</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>You need to be logged in to add items to your cart.</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-primary">Login</a>
+                    <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary">Register</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            {% if restaurant.image %}
+                <img src="{{ restaurant.image.url }}" class="card-img-top restaurant-image" alt="{{ restaurant.name }}" style="height: 400px;">
+            {% else %}
+                <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" class="card-img-top restaurant-image" alt="{{ restaurant.name }}" style="height: 400px;">
+            {% endif %}
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <h2 class="card-title mb-2">{{ restaurant.name }}</h2>
+                        <p class="card-text">{{ restaurant.description }}</p>
+                    </div>
+                    <div>
+                        <span class="badge bg-primary rating-badge rating-display">{{ restaurant.rating }}/5</span>
+                    </div>
+                </div>
+                <div class="row restaurant-stats">
+                    <div class="col-md-3 stat-item">
+                        <div class="stat-number">{{ restaurant.menu_items.count }}</div>
+                        <div class="stat-label">Menu Items</div>
+                    </div>
+                    <div class="col-md-3 stat-item">
+                        <div class="stat-number">{{ restaurant.reviews.count }}</div>
+                        <div class="stat-label">Reviews</div>
+                    </div>
+                    <div class="col-md-3 stat-item">
+                        <div class="stat-number">{{ restaurant.hours.count }}</div>
+                        <div class="stat-label">Open Hours</div>
+                    </div>
+                    <div class="col-md-3 stat-item">
+                        <div class="stat-number">{{ restaurant.restaurantcuisine_set.count }}</div>
+                        <div class="stat-label">Cuisines</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Contact Information</h5>
+                        <p><strong>Address:</strong> {{ restaurant.address }}, {{ restaurant.city }}, {{ restaurant.state }} {{ restaurant.zip_code }}</p>
+                        <p><strong>Phone:</strong> {{ restaurant.phone_number }}</p>
+                        <p><strong>Email:</strong> {{ restaurant.email }}</p>
+                        {% if restaurant.website %}
+                            <p><strong>Website:</strong> <a href="{{ restaurant.website }}" target="_blank">{{ restaurant.website }}</a></p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Opening Hours</h5>
+                        <ul class="list-group">
+                            {% for hour in restaurant.hours.all %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ hour.get_day_of_week_display }}
+                                    {% if hour.is_closed %}
+                                        <span class="badge bg-secondary">Closed</span>
+                                    {% else %}
+                                        <span>{{ hour.opening_time|time:"H:i" }} - {{ hour.closing_time|time:"H:i" }}</span>
+                                    {% endif %}
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item">Hours not available</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Menu</h2>
+        {% if restaurant.menu_items.all %}
+            <div class="row">
+                {% for item in restaurant.menu_items.all %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card menu-item-card">
+                            <div class="row g-0">
+                                <div class="col-md-4">
+                                    {% if item.image %}
+                                        <img src="{{ item.image.url }}" class="img-fluid rounded-start" alt="{{ item.name }}" style="height: 100px; object-fit: cover;">
+                                    {% else %}
+                                        <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" class="img-fluid rounded-start" alt="{{ item.name }}" style="height: 100px; object-fit: cover;">
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <h5 class="card-title">{{ item.name }}</h5>
+                                            <h5 class="price-tag">${{ item.price }}</h5>
+                                        </div>
+                                        <p class="card-text">{{ item.description }}</p>
+                                        <div>
+                                            {% if item.is_vegetarian %}
+                                                <span class="badge bg-success">Vegetarian</span>
+                                            {% endif %}
+                                            {% if item.is_vegan %}
+                                                <span class="badge bg-success">Vegan</span>
+                                            {% endif %}
+                                            {% if not item.is_available %}
+                                                <span class="badge bg-secondary">Not Available</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="mt-2">
+                                            {% if user.is_authenticated %}
+                                                <form method="post" action="{% url 'orders:add_to_cart' item.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <div class="input-group input-group-sm" style="width: 120px;">
+                                                        <input type="number" name="quantity" value="1" min="1" class="form-control form-control-sm" style="max-width: 60px;">
+                                                        <button type="submit" class="btn btn-primary btn-sm">Add to Cart</button>
+                                                    </div>
+                                                </form>
+                                            {% else %}
+                                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                                    Add to Cart
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p>No menu items available for this restaurant.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <h2>Reviews</h2>
+        {% if restaurant.reviews.all %}
+            {% for review in restaurant.reviews.all %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="card-title">{{ review.title }}</h5>
+                            <span class="badge bg-primary">{{ review.rating }}/5</span>
+                        </div>
+                        <p class="card-text">{{ review.review_text }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">by {{ review.user.username }} on {{ review.created_at|date:"M d, Y" }}</small>
+                            {% if review.is_verified_purchase %}
+                                <span class="badge bg-success">Verified Purchase</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                <p>No reviews yet. Be the first to review this restaurant!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Please Login</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>You need to be logged in to add items to your cart.</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-primary">Login</a>
+                    <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary">Register</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

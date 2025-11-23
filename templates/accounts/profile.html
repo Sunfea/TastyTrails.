@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - Zomato Clone{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>User Profile</h2>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ user.username }}</h5>
+                <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
+                <p class="card-text"><strong>Phone:</strong> {{ user.phone_number|default:"Not provided" }}</p>
+                <p class="card-text"><strong>Full Name:</strong> {{ profile.full_name|default:"Not provided" }}</p>
+                <p class="card-text"><strong>Address:</strong> {{ profile.address|default:"Not provided" }}</p>
+                <p class="card-text"><strong>City:</strong> {{ profile.city|default:"Not provided" }}</p>
+                <p class="card-text"><strong>State:</strong> {{ profile.state|default:"Not provided" }}</p>
+                <p class="card-text"><strong>Zip Code:</strong> {{ profile.zip_code|default:"Not provided" }}</p>
+                <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Profile Picture</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if profile.profile_picture %}
+                    <img src="{{ profile.profile_picture.url }}" class="img-fluid rounded" alt="Profile Picture">
+                {% else %}
+                    <div class="bg-light p-5 rounded">
+                        <span class="text-muted">No profile picture</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

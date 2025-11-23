@@ -1,0 +1,11 @@
+{
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile.railway"
+  },
+  "deploy": {
+    "startCommand": "gunicorn tastytrails.wsgi:application --bind 0.0.0.0:$PORT",
+    "healthcheckPath": "/health/",
+    "healthcheckTimeout": 300
+  }
+}

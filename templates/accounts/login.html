@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - TastyTrails{% endblock %}
+
+{% block hero %}
+<div class="auth-hero-modern">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="hero-title">Welcome Back</h1>
+                <p class="hero-subtitle">Sign in to your account to continue ordering delicious food</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-wrapper">
+        <div class="auth-box">
+            <div class="auth-header">
+                <h2>Login to Your Account</h2>
+                <p>Enter your credentials to access your account</p>
+            </div>
+            
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" class="form-control" id="email" name="email" required placeholder="Enter your email">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" class="form-control" id="password" name="password" required placeholder="Enter your password">
+                    </div>
+                </div>
+                
+                <button type="submit" class="auth-btn btn-primary">Login to Your Account</button>
+                
+                <div class="text-center mt-3">
+                    <a href="#" class="auth-link">Forgot Password?</a>
+                </div>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="{% url 'accounts:register' %}">Register here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile.fastapi.railway"
+  },
+  "deploy": {
+    "startCommand": "uvicorn fastapi_app:app --host 0.0.0.0 --port $PORT",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 300
+  }
+}

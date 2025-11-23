@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Cart - Zomato Clone{% endblock %}
+
+{% block hero %}
+<div class="hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1>Your Cart</h1>
+                <p class="lead">Review your items before checkout</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card filter-card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Order Summary</h3>
+            </div>
+            <div class="card-body">
+                {% if items %}
+                    {% for item in items %}
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-2">
+                            {% if item.menu_item.image %}
+                                <img src="{{ item.menu_item.image.url }}" class="img-fluid rounded" alt="{{ item.menu_item.name }}" style="height: 60px; object-fit: cover;">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" class="img-fluid rounded" alt="{{ item.menu_item.name }}" style="height: 60px; object-fit: cover;">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <h5>{{ item.menu_item.name }}</h5>
+                            <p class="text-muted mb-0">{{ item.menu_item.restaurant.name }}</p>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="input-group">
+                                <button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateQuantity({{ item.id }}, {{ item.quantity|add:'-1' }})">-</button>
+                                <input type="text" class="form-control form-control-sm text-center" value="{{ item.quantity }}" readonly>
+                                <button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateQuantity({{ item.id }}, {{ item.quantity|add:'1' }})">+</button>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <strong>${{ item.total_price }}</strong>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button class="btn btn-danger btn-sm" onclick="removeItem({{ item.id }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <hr>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x mb-3 text-muted"></i>
+                        <h4>Your cart is empty</h4>
+                        <p class="text-muted">Add delicious items from our restaurants to your cart.</p>
+                        <a href="{% url 'restaurants:restaurant_list' %}" class="btn btn-primary">Browse Restaurants</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card filter-card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Order Total</h3>
+            </div>
+            <div class="card-body">
+                {% if items %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span>${{ total }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Delivery Fee:</span>
+                        <span>$2.99</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tax:</span>
+                        <span>${{ total|mul:0.08|floatformat:2 }}</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Total:</span>
+                        <span>${{ total|add:2.99|add:total|mul:0.08|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-grid mt-4">
+                        <button class="btn btn-success btn-lg btn-filter" id="checkoutBtn">
+                            Proceed to Checkout
+                        </button>
+                    </div>
+                {% else %}
+                    <div class="text-center">
+                        <p class="text-muted">Add items to your cart to see the total.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Please Login</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>You need to be logged in to add items to your cart.</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-primary">Login</a>
+                    <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary">Register</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateQuantity(orderItemId, newQuantity) {
+    if (newQuantity <= 0) {
+        removeItem(orderItemId);
+        return;
+    }
+    
+    fetch(`/api/orders/update/${orderItemId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({quantity: newQuantity})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error updating cart: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the cart.');
+    });
+}
+
+function removeItem(orderItemId) {
+    if (confirm('Are you sure you want to remove this item from your cart?')) {
+        fetch(`/api/orders/remove/${orderItemId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error removing item: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while removing the item.');
+        });
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.getElementById('checkoutBtn').addEventListener('click', function() {
+    alert('Checkout functionality would be implemented here. In a real application, this would redirect to a payment page.');
+});
+</script>
+{% endblock %}

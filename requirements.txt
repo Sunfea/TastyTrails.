@@ -1,0 +1,15 @@
+Django>=4.2
+djangorestframework>=3.14
+dj-database-url>=2.0
+psycopg2-binary>=2.9
+redis>=4.5
+celery>=5.2
+fastapi>=0.95
+uvicorn>=0.21
+sqlalchemy>=2.0
+python-dotenv>=1.0
+pillow>=9.5
+django-cors-headers>=4.0
+requests>=2.31
+djangorestframework-simplejwt>=5.2
+gunicorn>=20.1
