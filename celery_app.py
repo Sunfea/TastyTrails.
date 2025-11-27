@@ -1,4 +1,4 @@
-import os
+ import os
 from celery import Celery
 
 # Set the default Django settings module
